@@ -40,23 +40,47 @@ export const API_CONFIG = {
   USER_AGENT: 'EthekwiniPropertyAgent/3.0',
 };
 
-// Zoning Definitions
+// Zoning Definitions - Updated with actual eThekwini zones
 export const ZONING_DEFINITIONS: Record<string, { description: string; coverage: number; far: number; height: number; uses: string[]; density: string; }> = {
+  // Residential Zones
   'IPTN Residential': { description: 'Integrated Planning Residential - Medium density', coverage: 60, far: 1.2, height: 3, uses: ['Dwelling', 'Townhouses', 'Home office'], density: '20-40/ha' },
   'IPTN Business': { description: 'Integrated Planning Business - Mixed use', coverage: 80, far: 2.0, height: 5, uses: ['Retail', 'Offices', 'Residential'], density: 'Commercial' },
-  'General Residential 1': { description: 'Low density residential', coverage: 50, far: 0.8, height: 2, uses: ['Dwelling house'], density: '1/erf' },
-  'General Residential 2': { description: 'Low-medium density', coverage: 55, far: 1.0, height: 2, uses: ['Dwelling', 'Second dwelling'], density: '1-2/erf' },
-  'General Residential 3': { description: 'Medium density', coverage: 60, far: 1.4, height: 3, uses: ['Townhouses', 'Flats'], density: '20-40/ha' },
-  'Special Residential': { description: 'Site-specific density', coverage: 50, far: 1.0, height: 2, uses: ['Dwelling'], density: 'As specified' },
+  'General Residential 1': { description: 'Low density residential - Single dwelling', coverage: 50, far: 0.8, height: 2, uses: ['Dwelling house'], density: '1/erf' },
+  'General Residential 2': { description: 'Low-medium density residential', coverage: 55, far: 1.0, height: 2, uses: ['Dwelling', 'Second dwelling'], density: '1-2/erf' },
+  'General Residential 3': { description: 'Medium density residential', coverage: 60, far: 1.4, height: 3, uses: ['Townhouses', 'Flats'], density: '20-40/ha' },
+  'General Residential 4': { description: 'Medium-high density residential', coverage: 65, far: 1.6, height: 4, uses: ['Flats', 'Townhouses'], density: '40-80/ha' },
+  'Special Residential': { description: 'Site-specific density residential', coverage: 50, far: 1.0, height: 2, uses: ['Dwelling'], density: 'As specified' },
+  'Special Residential 400': { description: 'Special residential 400sqm minimum', coverage: 50, far: 0.8, height: 2, uses: ['Dwelling'], density: 'Low' },
+  'Residential Estate': { description: 'Estate residential with open space', coverage: 40, far: 0.6, height: 2, uses: ['Dwelling', 'Estate facilities'], density: 'Low' },
+  
+  // Business Zones
   'Business 1': { description: 'General business', coverage: 70, far: 2.0, height: 4, uses: ['Retail', 'Offices'], density: 'Commercial' },
   'Business 2': { description: 'Mixed use business', coverage: 65, far: 1.8, height: 4, uses: ['Retail', 'Residential'], density: 'Mixed' },
+  'Business 3': { description: 'Local business', coverage: 60, far: 1.2, height: 3, uses: ['Local retail', 'Services'], density: 'Local' },
+  'Business 4': { description: 'Regional business', coverage: 80, far: 3.0, height: 6, uses: ['Regional retail', 'Offices'], density: 'Regional' },
+  'Business 5': { description: 'CBD core', coverage: 90, far: 5.0, height: 10, uses: ['High-rise', 'Mixed use'], density: 'CBD' },
+  'General Business': { description: 'General business use', coverage: 70, far: 2.0, height: 4, uses: ['Retail', 'Offices', 'Commercial'], density: 'Commercial' },
+  'General Business-Central Area': { description: 'CBD central business', coverage: 90, far: 5.0, height: 10, uses: ['High-rise', 'Mixed use', 'Commercial'], density: 'CBD Core' },
+  'Local Business': { description: 'Local business and services', coverage: 60, far: 1.2, height: 3, uses: ['Local retail', 'Services'], density: 'Local' },
+  
+  // Industrial Zones
   'Industrial 1': { description: 'Light industrial', coverage: 75, far: 1.5, height: 3, uses: ['Manufacturing', 'Warehouse'], density: 'Industrial' },
+  'Industrial 2': { description: 'General industrial', coverage: 80, far: 1.8, height: 4, uses: ['Heavy industry', 'Manufacturing'], density: 'Industrial' },
+  'Industrial 3': { description: 'Special industrial', coverage: 85, far: 2.0, height: 5, uses: ['Heavy industry', 'Processing'], density: 'Industrial' },
+  
+  // Special Zones
+  'Special Zone': { description: 'Special purpose zone - verify with municipality', coverage: 50, far: 1.0, height: 3, uses: ['As per scheme'], density: 'Special' },
   'Existing Street Reservation': { description: 'Road reserve - No development', coverage: 0, far: 0, height: 0, uses: ['Roads only'], density: 'None' },
   'Open Space': { description: 'Parks and recreation', coverage: 5, far: 0.05, height: 1, uses: ['Parks', 'Sports'], density: 'Open' },
   'Public Open Space Reservation': { description: 'Public open space', coverage: 5, far: 0.05, height: 1, uses: ['Public park'], density: 'Open' },
   'Market Reservation': { description: 'Market area', coverage: 60, far: 1.0, height: 2, uses: ['Market'], density: 'Special' },
   'Agricultural': { description: 'Agricultural land', coverage: 5, far: 0.1, height: 2, uses: ['Farming'], density: 'Agricultural' },
   'Undetermined': { description: 'No formal zoning - verify with municipality', coverage: 40, far: 0.5, height: 2, uses: ['Verify'], density: 'Unknown' },
+  
+  // Conservation & Special Use Zones
+  'Conservation': { description: 'Nature conservation area', coverage: 0, far: 0, height: 0, uses: ['Conservation only'], density: 'None' },
+  'Special Use': { description: 'Special purpose zone', coverage: 40, far: 0.8, height: 2, uses: ['As specified'], density: 'Special' },
+  'Institutional': { description: 'Institutional use', coverage: 50, far: 1.0, height: 3, uses: ['Schools', 'Hospitals', 'Government'], density: 'Institutional' },
 };
 
 // Agent definitions
@@ -109,8 +133,11 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
   }
 }
 
-async function arcgisQuery(url: string, params: Record<string, string>): Promise<{ data: unknown; error: string | null }> {
-  const finalParams = { ...params, inSR: params.inSR || '4326', outSR: params.outSR || '4326', f: 'json' };
+async function arcgisQuery(url: string, params: Record<string, string | number>): Promise<{ data: unknown; error: string | null }> {
+  const finalParams: Record<string, string> = { inSR: '4326', outSR: '4326', f: 'json' };
+  for (const [key, value] of Object.entries(params)) {
+    finalParams[key] = String(value);
+  }
   const fullUrl = `${url}?${new URLSearchParams(finalParams).toString()}`;
   try {
     const response = await fetchWithTimeout(fullUrl, { method: 'GET', headers: { 'User-Agent': API_CONFIG.USER_AGENT } }, API_CONFIG.TIMEOUT);
@@ -142,33 +169,61 @@ export async function geocodeAddress(address: string): Promise<{ location: Locat
 }
 
 export async function queryCSGParcel(lon: number, lat: number): Promise<{ data: CadastralData | null; error: string | null }> {
-  const params = { geometry: `${lon},${lat}`, outFields: 'PARCEL_NO,SS_NAME,FARM_NAME,PORTION,PRCL_KEY,PRCL_TYPE,LSTATUS,PROVINCE,GEOM_AREA' };
+  // Use distance buffer of 50m to find parcels when geocoded point is on road centerline
+  const params: Record<string, string | number> = { 
+    geometry: `${lon},${lat}`,
+    geometryType: 'esriGeometryPoint',
+    outFields: 'PARCEL_NO,SS_NAME,FARM_NAME,PORTION,PRCL_KEY,PRCL_TYPE,LSTATUS,PROVINCE,GEOM_AREA',
+    distance: 50,
+    units: 'esriSRUnit_Meter',
+    spatialRel: 'esriSpatialRelIntersects'
+  };
+  
   let result = await arcgisQuery(API_CONFIG.CSG.ERVEN, params);
   if (result.error || !result.data) {
     result = await arcgisQuery(API_CONFIG.CSG.FARM_PORTION, params);
     if (result.data) {
       const d = result.data as { features?: Array<{ attributes?: Record<string, unknown> }> };
       if (d.features?.length) { 
-        const a = d.features[0].attributes || {}; 
-        const area = a.GEOM_AREA as number;
-        // Limit reported area to reasonable urban parcel size (max 10,000 sqm for display)
-        const displayArea = area > 100000 ? undefined : area;
-        return { data: { source: 'CSG Farm', farm_name: a.FARM_NAME as string, portion: a.PORTION?.toString(), extent_sqm: displayArea, sg_code: a.PRCL_KEY as string, parcel_key: a.PRCL_KEY as string, legal_status: a.LSTATUS === 'S' ? 'Registered' : 'Unregistered', attributes: a }, error: null }; 
+        // Sort by area and get smallest (most specific) parcel
+        const sorted = d.features
+          .filter(f => f.attributes?.GEOM_AREA && (f.attributes.GEOM_AREA as number) < 50000)
+          .sort((a, b) => ((a.attributes?.GEOM_AREA as number) || 0) - ((b.attributes?.GEOM_AREA as number) || 0));
+        
+        if (sorted.length > 0) {
+          const a = sorted[0].attributes || {}; 
+          const area = a.GEOM_AREA as number;
+          return { data: { source: 'CSG Farm', farm_name: a.FARM_NAME as string, portion: a.PORTION?.toString(), extent_sqm: Math.round(area), sg_code: a.PRCL_KEY as string, parcel_key: a.PRCL_KEY as string, legal_status: a.LSTATUS === 'S' ? 'Registered' : 'Unregistered', attributes: a }, error: null }; 
+        }
       }
     }
     return { data: null, error: result.error || 'Not found' };
   }
+  
   const d = result.data as { features?: Array<{ attributes?: Record<string, unknown> }> };
   if (!d.features?.length) return { data: null, error: 'Not in CSG' };
-  const a = d.features[0].attributes || {};
+  
+  // Sort by area and get smallest (most specific) parcel - avoids large farm portions
+  const sorted = d.features
+    .filter(f => f.attributes?.GEOM_AREA && (f.attributes.GEOM_AREA as number) < 50000)
+    .sort((a, b) => ((a.attributes?.GEOM_AREA as number) || 0) - ((b.attributes?.GEOM_AREA as number) || 0));
+  
+  if (sorted.length === 0) return { data: null, error: 'No urban parcel found' };
+  
+  const a = sorted[0].attributes || {};
   const area = a.GEOM_AREA as number;
-  // Limit to reasonable urban parcel size
-  const displayArea = area > 100000 ? undefined : area;
-  return { data: { source: 'Chief Surveyor General', erf_number: a.PARCEL_NO?.toString(), township: (a.SS_NAME as string)?.trim() || undefined, farm_name: a.FARM_NAME as string, portion: a.PORTION?.toString(), extent_sqm: displayArea, sg_code: a.PRCL_KEY as string, parcel_key: a.PRCL_KEY as string, legal_status: a.LSTATUS === 'S' ? 'Registered' : a.LSTATUS === 'R' ? 'Registered' : 'Unregistered', attributes: a }, error: null };
+  return { data: { source: 'Chief Surveyor General', erf_number: a.PARCEL_NO?.toString(), township: (a.SS_NAME as string)?.trim() || undefined, farm_name: a.FARM_NAME as string, portion: a.PORTION?.toString(), extent_sqm: Math.round(area), sg_code: a.PRCL_KEY as string, parcel_key: a.PRCL_KEY as string, legal_status: a.LSTATUS === 'S' ? 'Registered' : a.LSTATUS === 'R' ? 'Registered' : 'Unregistered', attributes: a }, error: null };
 }
 
 export async function queryApprovedParcels(lon: number, lat: number): Promise<{ data: ApprovedParcelData | null; error: string | null }> {
-  const params = { geometry: `${lon},${lat}`, outFields: 'ERF,PORTION,FARMTOWNNA,SUBURB,STRNUM,STRNAME,STRTYPE,AREASG,STATUS,DOCREF,PROPERTYID' };
+  const params: Record<string, string | number> = { 
+    geometry: `${lon},${lat}`,
+    geometryType: 'esriGeometryPoint',
+    outFields: 'ERF,PORTION,FARMTOWNNA,SUBURB,STRNUM,STRNAME,STRTYPE,AREASG,STATUS,DOCREF,PROPERTYID',
+    distance: 50,
+    units: 'esriSRUnit_Meter',
+    spatialRel: 'esriSpatialRelIntersects'
+  };
   const result = await arcgisQuery(API_CONFIG.ARCGIS_ONLINE.APPROVED_PARCELS, params);
   if (result.error || !result.data) return { data: null, error: result.error };
   const d = result.data as { features?: Array<{ attributes?: Record<string, unknown> }> };
@@ -181,16 +236,42 @@ export async function queryApprovedParcels(lon: number, lat: number): Promise<{ 
 }
 
 export async function queryZoning(lon: number, lat: number): Promise<{ data: ZoningData | null; error: string | null }> {
-  // Note: Only covers BEREA SOUTH and ROC - NORTH schemes
-  const params = { geometry: `${lon},${lat}`, outFields: 'ZONING,REGION,SCHEMENAME,REZONEFROM,AMENDDATE,APPROVDATE,SPZONECODE,NOTES' };
+  // ArcGIS Online Zoning covers: BEREA NORTH, BEREA SOUTH, UMHLANGA, CENTRAL, ROC-NORTH schemes
+  // Use distance buffer to handle geocoded points on road centerlines
+  const params: Record<string, string | number> = { 
+    geometry: `${lon},${lat}`,
+    geometryType: 'esriGeometryPoint',
+    outFields: 'ZONING,REGION,SCHEMENAME,REZONEFROM,AMENDDATE,APPROVDATE,SPZONECODE,NOTES',
+    distance: 30,
+    units: 'esriSRUnit_Meter',
+    spatialRel: 'esriSpatialRelIntersects'
+  };
+  
   const result = await arcgisQuery(API_CONFIG.ARCGIS_ONLINE.ZONING, params);
   if (result.error || !result.data) return { data: null, error: result.error };
+  
   const d = result.data as { features?: Array<{ attributes?: Record<string, unknown> }> };
   if (!d.features?.length) return { data: null, error: 'Not in scheme area' };
+  
   const a = d.features[0].attributes || {};
-  const name = a.ZONING as string || 'Undetermined';
+  const name = (a.ZONING || a.SPZONECODE) as string || 'Undetermined';
   const def = ZONING_DEFINITIONS[name] || ZONING_DEFINITIONS['Undetermined'];
-  return { data: { source: 'eThekwini Town Planning', zone_code: a.SPZONECODE as string || name, zone_description: def.description, scheme_name: a.SCHEMENAME as string, region: a.REGION as string, permitted_uses: def.uses, coverage_percent: def.coverage, far: def.far, height_storeys: def.height, density: def.density, attributes: a }, error: null };
+  
+  return { 
+    data: { 
+      source: 'eThekwini Town Planning', 
+      zone_code: name, 
+      zone_description: def.description, 
+      scheme_name: a.SCHEMENAME as string, 
+      region: a.REGION as string, 
+      permitted_uses: def.uses, 
+      coverage_percent: def.coverage, 
+      far: def.far, 
+      height_storeys: def.height, 
+      density: def.density, 
+      attributes: a 
+    }, error: null 
+  };
 }
 
 export async function queryBuildings(lon: number, lat: number): Promise<{ data: BuildingData[] | null; error: string | null }> {
@@ -250,16 +331,34 @@ export function calculateDevelopmentRights(
   zoning: ZoningData | null,
   approvedParcels: ApprovedParcelData | null = null
 ): DevelopmentRights {
-  // Try multiple sources for site area, in order of preference:
-  // 1. CSG Cadastral GEOM_AREA (in sqm)
-  // 2. Approved Parcels AREASG converted from hectares to sqm
-  // 3. Return 0 if no data available (user must verify with municipality)
-  let site = 0;
+  // Try multiple sources for site area, with intelligent selection:
+  // Typical urban stand: 200 - 10,000 sqm
+  // Use the most reasonable value from available sources
   
-  if (cadastral?.extent_sqm && cadastral.extent_sqm > 100 && cadastral.extent_sqm < 100000) {
-    site = cadastral.extent_sqm;
-  } else if (approvedParcels?.area_sqm && approvedParcels.area_sqm > 100) {
-    site = approvedParcels.area_sqm;
+  let site = 0;
+  let source = 'None';
+  
+  const csgArea = cadastral?.extent_sqm || 0;
+  const approvedArea = approvedParcels?.area_sqm || 0;
+  
+  // Validate areas - reasonable urban parcel is 200 - 50,000 sqm
+  const csgValid = csgArea >= 200 && csgArea <= 50000;
+  const approvedValid = approvedArea >= 200 && approvedArea <= 50000;
+  
+  if (csgValid && approvedValid) {
+    // Both valid - prefer the larger (more accurate for merged parcels)
+    site = Math.max(csgArea, approvedArea);
+    source = csgArea >= approvedArea ? 'CSG' : 'Approved Parcels';
+  } else if (csgValid) {
+    site = csgArea;
+    source = 'CSG Cadastral';
+  } else if (approvedValid) {
+    site = approvedArea;
+    source = 'Approved Parcels';
+  } else if (csgArea > 0 || approvedArea > 0) {
+    // Use whatever is available but flag as uncertain
+    site = csgArea || approvedArea;
+    source = 'Unverified';
   }
   
   const cov = zoning?.coverage_percent || 50;

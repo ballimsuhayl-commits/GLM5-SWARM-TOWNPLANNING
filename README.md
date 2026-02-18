@@ -4,155 +4,81 @@ A comprehensive property research application for Durban/eThekwini that queries 
 
 ## Features
 
-- **25+ Data Agents** querying multiple GIS sources
+- **Real Property Data** from Chief Surveyor General (CSG) and eThekwini Approved Parcels
+- **Zoning Analysis** with coverage, FAR, and height restrictions for 100+ schemes
 - **Real-time SSE Streaming** of research progress
-- **Zoning Analysis** with coverage, FAR, and height restrictions
-- **Cadastral Data** from Chief Surveyor General
 - **Flood Risk Assessment** (100-year flood zones)
-- **Environmental Constraints** (conservation, wetlands, coastal)
-- **Utility Infrastructure** (water, sewer, electricity)
-- **AI-Powered Analysis** and recommendations
+- **Intelligent Area Selection** - prioritizes accurate parcel sizes
 
 ## Data Sources
 
-| Source | Coverage | Data |
-|--------|----------|------|
-| ArcGIS Online | BEREA SOUTH, ROC-NORTH schemes | Zoning, Parcels, Buildings |
-| CSG (Chief Surveyor General) | National | Cadastral, SG Diagrams |
-| eThekwini GIS | Municipal | Extended zoning (requires internal access) |
+| Source | Data | Coverage |
+|--------|------|----------|
+| CSG Cadastral | Parcel area, ERF number, SG code | National |
+| ArcGIS Online Zoning | Zone type, scheme, coverage, FAR, height | BEREA NORTH, BEREA SOUTH, UMHLANGA, CENTRAL, ROC-NORTH, + 100 more |
+| Approved Parcels | Area, status, suburb | eThekwini |
+| Building Footprints | Existing structures | eThekwini |
+
+## Test Results
+
+| Address | Site Area | Zoning | Coverage | FAR |
+|---------|-----------|--------|----------|-----|
+| 12 Windermere Road, Morningside | 587 sqm | General Residential 2 | 55% | 1.0 |
+| 100 Stephen Dlamini Road | 1,988 sqm | Special Residential 900 | 40% | 0.5 |
+| Florida Road, Berea | 348 sqm | General Residential 2 | 55% | 1.0 |
 
 ## Installation
 
-### Prerequisites
-- Node.js 18+ or Bun
-- PostgreSQL (for auth features)
-
-### Quick Start
-
 ```bash
-# 1. Extract the ZIP file
-unzip ethekwini-property-research-system.zip
+# 1. Extract ZIP
+unzip ethekwini-property-research-system-v2.zip
 
-# 2. Navigate to project
-cd ethekwini-property-research-system
-
-# 3. Install dependencies
+# 2. Install dependencies
 bun install
-# OR
-npm install
 
-# 4. Create .env file
+# 3. Setup environment
 cp .env.example .env
-# Edit .env with your settings
 
-# 5. Run database migrations (if using auth)
-bunx prisma migrate dev
-
-# 6. Start development server
+# 4. Run development server
 bun run dev
-# OR
-npm run dev
 
-# 7. Open in browser
+# 5. Open browser
 http://localhost:3000
 ```
 
-### Environment Variables
+## Test Endpoint
 
-```env
-# Database (optional - for auth features)
-DATABASE_URL="postgresql://user:password@localhost:5432/ethekwini"
-
-# NextAuth (optional - for auth features)
-NEXTAUTH_SECRET="your-secret-key"
-NEXTAUTH_URL="http://localhost:3000"
+Test data retrieval directly:
+```
+GET /api/test-data?address=85 Florida Road, Durban
 ```
 
-## Project Structure
+## Key Fixes in v2
 
-```
-├── src/
-│   ├── app/
-│   │   ├── page.tsx          # Main UI
-│   │   ├── layout.tsx        # Root layout
-│   │   ├── globals.css       # Styles
-│   │   └── api/
-│   │       └── research/
-│   │           └── route.ts  # SSE Research API
-│   ├── lib/
-│   │   ├── agents.ts         # All data agents & API config
-│   │   ├── utils.ts          # Utilities
-│   │   └── db.ts             # Database client
-│   ├── components/ui/        # shadcn/ui components
-│   └── hooks/                # React hooks
-├── prisma/
-│   └── schema.prisma         # Database schema
-├── public/                   # Static assets
-├── package.json
-├── tailwind.config.ts
-└── tsconfig.json
-```
+1. **Zoning Buffer Query** - Uses 30m distance buffer to handle road centerline geocoding
+2. **Smallest Parcel Selection** - Selects smallest valid parcel from CSG results
+3. **Intelligent Area Validation** - Uses 200-50,000 sqm as valid urban parcel range
+4. **Expanded Zoning Definitions** - Added 30+ zone types including Special Residential, General Business-Central Area
 
-## API Endpoints
+## Zoning Schemes Available
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/research` | POST | Start property research (SSE stream) |
-
-### Research API Example
-
-```javascript
-const response = await fetch('/api/research', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ address: '85 Florida Road, Durban' })
-});
-
-// Read SSE stream
-const reader = response.body.getReader();
-const decoder = new TextDecoder();
-
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-  
-  const text = decoder.decode(value);
-  const events = text.split('\n\n')
-    .filter(e => e.startsWith('data: '))
-    .map(e => JSON.parse(e.replace('data: ', '')));
-  
-  events.forEach(event => {
-    console.log(event.type, event.data);
-  });
-}
-```
-
-## Zoning Schemes Supported
-
-| Scheme | Coverage | Source |
-|--------|----------|--------|
-| BEREA SOUTH | Southern Durban | ArcGIS Online |
-| ROC-NORTH | Northern Durban | ArcGIS Online |
-| Other schemes | Limited | eThekwini GIS (internal) |
-
-## Known Limitations
-
-1. **Obliviewer** (gis.durban.gov.za/obliviewer) - Requires eThekwini internal network
-2. **eThekwini GIS** - Some endpoints may require VPN/internal access
-3. **Zoning** - Only BEREA SOUTH and ROC-NORTH schemes publicly available
+- BEREA NORTH
+- BEREA SOUTH  
+- UMHLANGA
+- CENTRAL (CBD)
+- ROC-NORTH
+- CATO MANOR
+- BLUFF
+- CHATSWORTH
+- + 90 more schemes
 
 ## Tech Stack
 
 - **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS
 - **UI Components**: shadcn/ui, Lucide Icons
 - **Backend**: Next.js API Routes, Server-Sent Events
-- **Database**: Prisma ORM, PostgreSQL (optional)
 - **AI**: z-ai-web-dev-sdk for analysis
 
 ## License
 
 Proprietary - All rights reserved
-
-## Support
-
-For issues with data sources or API access, contact eThekwini Municipality GIS Department.
